@@ -1,0 +1,9 @@
+{
+  // Don’t analyse Python under .venv
+  "python.analysis.exclude": ["**/.venv/**"],
+
+  // Also hide any problems reported in .venv
+  "problems.exclude": {
+    "**/.venv/**": true
+  }
+}
