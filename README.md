@@ -1,274 +1,123 @@
-\# Supply Chain Black Swan Simulator
+# Supply Chain Black Swan Simulator
 
+**Industry:** Industrial Engineering / Logistics\
+**Objective:** Train AI agents to adapt supply chain decisions during unpredictable global events using scenario-based reinforcement learning.
 
+## Table of Contents
 
-An RL-based simulator for supply chain management under black-swan disruptions.
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Setup](#setup)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Training](#training)
+- [Evaluation & Visualization](#evaluation--visualization)
+- [Extending the Simulator](#extending-the-simulator)
+- [License](#license)
 
-Powered by \*\*SimPy\*\*, \*\*Stable-Baselines3\*\*, \*\*Optuna\*\*, and \*\*Gymnasium\*\*.
+## Overview
 
+Simulates a multi-stage supply chain under normal operations and injects "black swan" disruptions (e.g., supplier delays, strikes, delivery blocks). Uses SimPy for discrete event simulation and RL (Stable-Baselines3 or Ray RLlib) to train autonomous agents that minimize cost and downtime.
 
+## Features
 
-!\[Supply Chain RL Simulation](plots\_final/reward.png)
+- Discrete-event simulation of sourcing → manufacturing → delivery
+- Randomized crisis events managed by a `DisruptionManager`
+- Custom OpenAI Gym/Gymnasium environment wrapper
+- Reinforcement Learning agents (PPO) for decision-making
+- TensorBoard integration for live training metrics
+- Scripts for evaluation, plotting, and action logging
+- Example hyperparameter sweep with Ray Tune
 
+## Tech Stack
 
+- **Python** 3.8+
+- **SimPy** for simulation
+- **Gymnasium** (or Gym) for environment API
+- **Stable-Baselines3** (SB3) / **Ray RLlib** for RL training
+- **TensorBoard** for live metrics
+- **Matplotlib** for post-hoc plotting
 
----
+## Setup
 
+1. Clone repo:
+   ```bash
+   git clone <repo_url>
+   cd black_swan_sim
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate   # macOS/Linux
+   .\.venv\Scripts\Activate.ps1  # Windows PowerShell
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
+## Usage
 
-\## Project Structure
+- **Baseline simulation:**
+  ```bash
+  python env/supply_chain_env.py
+  ```
+- **Test Gym environment:**
+  ```bash
+  python test_gym_env.py
+  ```
+- **Train with Stable-Baselines3 + TensorBoard:**
+  ```bash
+  python train_sb3_tb.py
+  tensorboard --logdir tb_logs
+  ```
+- **Evaluate & plot histogram:**
+  ```bash
+  python evaluate_and_plot.py
+  ```
+- **Plot time-series of actions:**
+  ```bash
+  python plot_actions.py
+  ```
 
-
+## Project Structure
 
 ```
-
-black\_swan\_sim/
-
-├── env/
-
-│   ├── \_\_init\_\_.py
-
-│   ├── supply\_chain\_env.py        # Core SimPy environment
-
-│   └── supply\_chain\_gym.py        # Gym wrapper
-
-├── scenarios/
-
-│   └── disruptions.py             # DisruptionManager logic
-
-├── action\_logging\_cb.py           # TensorBoard action-logging callback
-
-├── train\_sb3\_tb.py                # PPO training with callbacks
-
-├── hyperparam\_tuning.py           # Optuna hyper-parameter tuning
-
-├── train\_best.py                  # Final training with best params
-
-├── evaluate\_and\_plot.py           # Per-episode evaluation \& plots
-
-├── evaluate\_scenarios.py          # Stress-test across disruption rates
-
-├── plots/                         # Generated per-episode charts
-
-├── plots\_final/                   # Final model evaluation charts
-
-├── plots\_scenarios/               # Robustness curve and CSV summary
-
-└── README.md                      # This file
-
+black_swan_sim/
+├── .venv/                     # Python virtual environment
+├── env/                      # Core SimPy supply chain code
+│   ├── supply_chain_env.py   # SimPy environment definition
+│   └── supply_chain_gym.py   # Gym wrapper
+├── scenarios/                # Disruption event definitions
+│   └── disruptions.py        # Black swan manager
+├── train_sb3_tb.py           # SB3 training + TensorBoard
+├── evaluate_and_plot.py      # Load model, run episodes, histogram
+├── plot_actions.py           # Save action time-series plots
+├── tune_sweep.py             # Ray Tune hyperparameter sweep example
+├── test_gym_env.py           # Quick import/test of Gym env
+├── requirements.txt          # pip dependencies
+└── README.md                 # Project overview (this file)
 ```
 
+## Training
 
+- SB3 PPO default settings train on 100k timesteps.
+- Hyperparameters can be tuned manually or via the `tune_sweep.py` script using Ray Tune.
 
----
+## Evaluation & Visualization
 
+- **evaluate\_and\_plot.py** generates a histogram of episode returns.
+- **plot\_actions.py** saves time-series plots of production/delivery times and chosen actions.
+- TensorBoard displays live metrics and action frequencies during training.
 
+## Extending the Simulator
 
-\## 1. Installation
+- Add new disruption types in `scenarios/disruptions.py`.
+- Introduce multi-agent coordination by cloning `SupplyChainGymEnv` with multiple nodes.
+- Integrate real-world data feeds for demand, commodity prices, or transport delays.
 
+## License
 
-
-```bash
-
-git clone https://github.com/<your-username>/black\_swan\_sim.git
-
-cd black\_swan\_sim
-
-python -m venv .venv
-
-\# Activate:
-
-\#   Linux/macOS: source .venv/bin/activate
-
-\#   Windows:     .\\.venv\\Scripts\\activate
-
-pip install -r requirements.txt
-
-```
-
-
-
----
-
-
-
-\## 2. Training Pipeline
-
-
-
-\### 2.1 Initial Training
-
-
-
-```bash
-
-python train\_sb3\_tb.py
-
-```
-
-
-
-\* Trains PPO for 100k steps with action-logging and periodic evaluation.
-
-\* Logs to `logs/` and saves best checkpoint in `logs/best\_model/`.
-
-
-
-\### 2.2 Hyper-Parameter Tuning
-
-
-
-```bash
-
-python hyperparam\_tuning.py
-
-```
-
-
-
-\* Runs Optuna for 20 trials over 50k steps each.
-
-\* Stores study in `optuna\_study/`.
-
-\* Prints best parameters.
-
-
-
-\### 2.3 Final Training with Best Params
-
-
-
-```bash
-
-python train\_best.py
-
-```
-
-
-
-\* Retrains PPO for 100k steps using tuned hyper-parameters.
-
-\* Logs to `logs/final\_model/` and saves final model as `ppo\_supply\_chain\_final.zip`.
-
-
-
----
-
-
-
-\## 3. Evaluation
-
-
-
-\### 3.1 Per-Episode Plots
-
-
-
-```bash
-
-python evaluate\_and\_plot.py
-
-```
-
-
-
-\* Generates stock, production time, delivery time, and reward plots into `plots\_final/`.
-
-
-
-\### 3.2 Robustness Testing
-
-
-
-```bash
-
-python evaluate\_scenarios.py
-
-```
-
-
-
-\* Runs evaluation at multiple disruption rates (0.0–1.0).
-
-\* Outputs `plots\_scenarios/results\_summary.csv` and `mean\_reward\_vs\_rate.png`.
-
-
-
----
-
-
-
-\## 4. Results Summary
-
-
-
-📈 \*\*Mean Rewards vs. Disruption Rate\*\*
-
-See `plots\_scenarios/mean\_reward\_vs\_rate.png`
-
-
-
-📊 \*\*Numeric Summary\*\* (`results\_summary.csv`)
-
-
-
-```csv
-
-\# disruption\_rate, mean\_reward, std\_reward
-
-0.0, 2303.0, 19.89
-
-0.25, 2309.2, 21.62
-
-0.5, 2309.9, 19.86
-
-0.75, 2316.6, 15.85
-
-1.0, 2306.2, 20.96
-
-```
-
-
-
----
-
-
-
-\## 5. Next Steps \& Extensions
-
-
-
-\* Experiment with different reward functions or multi-agent setups
-
-\* Add more sophisticated disruption scenarios (e.g. cascading or correlated)
-
-\* Dockerize for easier reproducibility and deployment
-
-
-
----
-
-
-
-\## 6. License \& Acknowledgements
-
-
-
-This project uses:
-
-
-
-\* \[Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3)
-
-\* \[SimPy](https://simpy.readthedocs.io)
-
-\* \[Optuna](https://optuna.org/)
-
-\* \[Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
-
-
-
-See `requirements.txt` for full dependencies.
-
-
+MIT © AbdulKareem Raed Abu Khadair
 
